@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "./Token.sol";
+// import "./Token.sol";
 // import "../../math/SafeMath.sol";
 
 /**
@@ -12,6 +12,23 @@ import "./Token.sol";
  * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
  * Originally based on code by FirstBlood: https://github.com/Firstbloodio/token/blob/master/smart_contract/FirstBloodToken.sol
  */
+
+
+interface IERC20 {
+
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
 contract ERC20 is IERC20 {
 //   using SafeMath for uint256;
 
@@ -24,7 +41,7 @@ contract ERC20 is IERC20 {
   /**
   * @dev Total number of tokens in existence
   */
-  function totalSupply() public view returns (uint256) {
+  function totalSupply() public view override returns (uint256) {
     return _totalSupply;
   }
 
@@ -33,7 +50,7 @@ contract ERC20 is IERC20 {
   * @param owner The address to query the balance of.
   * @return An uint256 representing the amount owned by the passed address.
   */
-  function balanceOf(address owner) public view returns (uint256) {
+  function balanceOf(address owner) public view override returns (uint256) {
     return _balances[owner];
   }
 
@@ -43,13 +60,7 @@ contract ERC20 is IERC20 {
    * @param spender address The address which will spend the funds.
    * @return A uint256 specifying the amount of tokens still available for the spender.
    */
-  function allowance(
-    address owner,
-    address spender
-   )
-    public
-    view
-    returns (uint256)
+  function allowance(address owner,address spender) public view override returns (uint256)
   {
     return _allowed[owner][spender];
   }
@@ -59,9 +70,9 @@ contract ERC20 is IERC20 {
   * @param to The address to transfer to.
   * @param value The amount to be transferred.
   */
-  function transfer(address to, uint256 value) public returns (bool) {
-    require(value <= _balances[msg.sender]);
-    require(to != address(0));
+  function transfer(address to, uint256 value) public override returns (bool) {
+    require(value <= _balances[msg.sender], "Balance less then value");
+    require(to != address(0),"'To' can't be zero");
 
     _balances[msg.sender] -= value;
     _balances[to] += value;
@@ -78,8 +89,8 @@ contract ERC20 is IERC20 {
    * @param spender The address which will spend the funds.
    * @param value The amount of tokens to be spent.
    */
-  function approve(address spender, uint256 value) public returns (bool) {
-    require(spender != address(0));
+  function approve(address spender, uint256 value) public override returns (bool) {
+    require(spender != address(0),"'Spender' can't be zero");
 
     _allowed[msg.sender][spender] = value;
     emit Approval(msg.sender, spender, value);
@@ -92,17 +103,10 @@ contract ERC20 is IERC20 {
    * @param to address The address which you want to transfer to
    * @param value uint256 the amount of tokens to be transferred
    */
-  function transferFrom(
-    address from,
-    address to,
-    uint256 value
-  )
-    public
-    returns (bool)
-  {
-    require(value <= _balances[from]);
-    require(value <= _allowed[from][msg.sender]);
-    require(to != address(0));
+  function transferFrom(address from, address to, uint256 value) public override returns (bool){
+    require(value <= _balances[from],"Balance less then value");
+    require(value <= _allowed[from][msg.sender],"Such amount is not allowed");
+    require(to != address(0),"'To' can't be zero");
 
     _balances[from] -=value;
     _balances[to] += value;
@@ -120,14 +124,8 @@ contract ERC20 is IERC20 {
    * @param spender The address which will spend the funds.
    * @param addedValue The amount of tokens to increase the allowance by.
    */
-  function increaseAllowance(
-    address spender,
-    uint256 addedValue
-  )
-    public
-    returns (bool)
-  {
-    require(spender != address(0));
+  function increaseAllowance(address spender,uint256 addedValue) public returns (bool){
+    require(spender != address(0),"'Spender' can't be zero");
 
     _allowed[msg.sender][spender] += addedValue;
     emit Approval(msg.sender, spender, _allowed[msg.sender][spender]);
@@ -150,7 +148,7 @@ contract ERC20 is IERC20 {
     public
     returns (bool)
   {
-    require(spender != address(0));
+    require(spender != address(0),"'Spender' can't be zero");
 
     _allowed[msg.sender][spender] -= subtractedValue;
     emit Approval(msg.sender, spender, _allowed[msg.sender][spender]);
@@ -179,7 +177,7 @@ contract ERC20 is IERC20 {
    */
   function _burn(address account, uint256 amount) internal {
     // require(account != 0); TODO FIX
-    require(amount <= _balances[account]);
+    require(amount <= _balances[account],"You don't have such amount");
 
     _totalSupply -= amount;
     _balances[account] -= amount;
@@ -194,7 +192,7 @@ contract ERC20 is IERC20 {
    * @param amount The amount that will be burnt.
    */
   function _burnFrom(address account, uint256 amount) internal {
-    require(amount <= _allowed[account][msg.sender]);
+    require(amount <= _allowed[account][msg.sender],"Account doesn't own such amount");
 
     // Should https://github.com/OpenZeppelin/zeppelin-solidity/issues/707 be accepted,
     // this function needs to emit an event with the updated approval.
