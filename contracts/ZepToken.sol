@@ -1,13 +1,14 @@
 //SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
+//contract and interface are fully satisfied by https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
 
 interface IERC20 {
-
+    // getters
     function totalSupply() external view returns (uint256);
     function balanceOf(address account) external view returns (uint256);
     function allowance(address owner, address spender) external view returns (uint256);
-
+    // functions
     function transfer(address recipient, uint256 amount) external returns (bool);
     function approve(address spender, uint256 amount) external returns (bool);
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
@@ -20,11 +21,26 @@ interface IERC20 {
 contract ERC20 is IERC20 {
   mapping (address => uint256) private _balances;
   mapping (address => mapping (address => uint256)) private _allowed;
-  uint256 private _totalSupply;
 
+  string private _name = "KCNCtoken";
+  string private _symbol = "KCNC";
+  uint private _decimals = 18;
+  uint256 private _totalSupply;
 
   function totalSupply() public view override returns (uint256) {
     return _totalSupply;
+  }
+
+  function name() public view returns (string memory){
+    return _name;
+  }
+
+  function decimals() public view returns (uint){
+    return _decimals;
+  }
+
+  function symbol() public view returns (string memory){
+    return _symbol;
   }
 
   function balanceOf(address owner) public view override returns (uint256) {
