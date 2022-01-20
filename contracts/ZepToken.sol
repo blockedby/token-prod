@@ -20,12 +20,28 @@ interface IERC20 {
 
 contract ERC20 is IERC20 {
   mapping (address => uint256) private _balances;
+  // можно разрешить только одному контракту, ай йай
   mapping (address => mapping (address => uint256)) private _allowed;
 
   string private _name = "KCNCtoken";
   string private _symbol = "KCNC";
   uint private _decimals = 18;
   uint256 private _totalSupply;
+  address private _owner;
+
+  error Unauthorized();
+
+  constructor(){
+    _owner = msg.sender;
+  }
+
+  modifier onlyBy(address _account)
+  {
+    if (msg.sender != _account)
+      revert Unauthorized();
+    _;
+  }
+  
 
   function totalSupply() public view override returns (uint256) {
     return _totalSupply;
@@ -72,10 +88,10 @@ contract ERC20 is IERC20 {
 
   function transferFrom(address from, address to, uint256 value) public override returns (bool){
     require(value <= _balances[from],"Balance less then value");
-    require(value <= _allowed[from][msg.sender],"Such amount is not allowed");
+    require(value <= _allowed[from][msg.sender],"Anauthorised, please approve");
     require(to != address(0),"'To' can't be zero");
 
-    _balances[from] -=value;
+    _balances[from] -= value;
     _balances[to] += value;
     _allowed[from][msg.sender] -= value;
     emit Transfer(from, to, value);
@@ -90,13 +106,7 @@ contract ERC20 is IERC20 {
     return true;
   }
 
-  function decreaseAllowance(
-    address spender,
-    uint256 subtractedValue
-  )
-    public
-    returns (bool)
-  {
+  function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool){
     require(spender != address(0),"'Spender' can't be zero");
 
     _allowed[msg.sender][spender] -= subtractedValue;
@@ -104,14 +114,14 @@ contract ERC20 is IERC20 {
     return true;
   }
 
-  function _mint(address account, uint256 amount) internal {
+  function mint(address account, uint256 amount) public onlyBy(_owner){
     require(account != address(0),"Account can't be zero");
     _totalSupply += amount;
     _balances[account] += amount;
     emit Transfer(address(0), account, amount);
   }
 
-  function _burn(address account, uint256 amount) internal {
+  function burn(address account, uint256 amount) public onlyBy(_owner) {
     require(account != address(0),"Account can't be zero");
     require(amount <= _balances[account],"You don't have such amount");
 
@@ -120,10 +130,10 @@ contract ERC20 is IERC20 {
     emit Transfer(account, address(0), amount);
   }
 
-  function _burnFrom(address account, uint256 amount) internal {
+  function burnFrom(address account, uint256 amount) public onlyBy(_owner) {
     require(amount <= _allowed[account][msg.sender],"Account doesn't own such amount");
 
     _allowed[account][msg.sender] -= amount;
-    _burn(account, amount);
+    burn(account, amount);
   }
 }
