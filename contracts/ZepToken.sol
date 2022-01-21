@@ -135,7 +135,7 @@ contract ZepToken is IERC20 {
   }
 
   function burnFrom(address account, uint256 amount) public onlyBy(_owner) {
-    require(amount <= _allowed[account][msg.sender],"Account doesn't own such amount");
+    require(amount <= _allowed[account][msg.sender],"Error with approved amount");
 
     _allowed[account][msg.sender] -= amount;
     burn(account, amount);
