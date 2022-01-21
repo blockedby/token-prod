@@ -21,7 +21,7 @@ interface IERC20 {
 contract ZepToken is IERC20 {
   mapping (address => uint256) public balances;
   // можно разрешить только одному контракту, ай йай
-  mapping (address => mapping (address => uint256)) private _allowed;
+  mapping (address => mapping (address => uint256)) public allowed;
 
   string private _name = "KCNCtoken";
   string private _symbol = "KCNC";
@@ -69,7 +69,7 @@ contract ZepToken is IERC20 {
 
   function allowance(address person,address spender) public view override returns (uint256)
   {
-    return _allowed[person][spender];
+    return allowed[person][spender];
   }
 
   function transfer(address to, uint256 value) public override returns (bool) {
@@ -85,19 +85,19 @@ contract ZepToken is IERC20 {
   function approve(address spender, uint256 value) public override returns (bool) {
     require(spender != address(0),"'Spender' can't be zero");
 
-    _allowed[msg.sender][spender] = value;
+    allowed[msg.sender][spender] = value;
     emit Approval(msg.sender, spender, value);
     return true;
   }
 
   function transferFrom(address from, address to, uint256 value) public override returns (bool){
     require(value <= balances[from],"Balance less then value");
-    require(value <= _allowed[from][msg.sender],"Unauthorised, please approve");
+    require(value <= allowed[from][msg.sender],"Unauthorised, please approve");
     require(to != address(0),"'To' can't be zero");
 
     balances[from] -= value;
     balances[to] += value;
-    _allowed[from][msg.sender] -= value;
+    allowed[from][msg.sender] -= value;
     emit Transfer(from, to, value);
     return true;
   }
@@ -105,16 +105,16 @@ contract ZepToken is IERC20 {
   function increaseAllowance(address spender,uint256 addedValue) public returns (bool){
     require(spender != address(0),"'Spender' can't be zero");
 
-    _allowed[msg.sender][spender] += addedValue;
-    emit Approval(msg.sender, spender, _allowed[msg.sender][spender]);
+    allowed[msg.sender][spender] += addedValue;
+    emit Approval(msg.sender, spender, allowed[msg.sender][spender]);
     return true;
   }
 
   function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool){
     require(spender != address(0),"'Spender' can't be zero");
 
-    _allowed[msg.sender][spender] -= subtractedValue;
-    emit Approval(msg.sender, spender, _allowed[msg.sender][spender]);
+    allowed[msg.sender][spender] -= subtractedValue;
+    emit Approval(msg.sender, spender, allowed[msg.sender][spender]);
     return true;
   }
 
@@ -135,9 +135,9 @@ contract ZepToken is IERC20 {
   }
 
   function burnFrom(address account, uint256 amount) public onlyBy(_owner) {
-    require(amount <= _allowed[account][msg.sender],"Error with approved amount");
+    require(amount <= allowed[account][msg.sender],"Error with approved amount");
 
-    _allowed[account][msg.sender] -= amount;
+    allowed[account][msg.sender] -= amount;
     burn(account, amount);
   }
 }
