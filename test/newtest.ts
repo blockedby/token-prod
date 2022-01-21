@@ -6,6 +6,8 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe('another try', () =>{
+
+    // ethers.utils.parseUnits("10.0", await token.decimals());
     let 
         tokenFactory: ContractFactory, 
         token: Contract, 
@@ -119,6 +121,14 @@ describe('another try', () =>{
             expect(_owner_balance).to.equal(700);
             expect(_alice_balance).to.equal(100);
             expect(_bob_balance).to.equal(200);
+
+            await expect(await token.connect(alice).balanceOf(owner.address)).to.equal(_owner_balance);
+            await expect(await token.connect(bob).balanceOf(alice.address)).to.equal(_alice_balance);
+            await expect(await token.connect(owner).balanceOf(bob.address)).to.equal(_bob_balance);
+
+            // await expect(await ethers.BigNumber.from(temp)).to.equal(_owner_balance);
+            // await expect(
+            //     token.connect(alice).balanceOf(owner.address)).to.equal(_owner_balance);
         });
         it("Should be able to allow", async function (){
             await token.connect(owner).approve(alice.address,100);
