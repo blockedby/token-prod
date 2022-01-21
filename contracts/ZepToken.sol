@@ -19,7 +19,7 @@ interface IERC20 {
 }
 
 contract ZepToken is IERC20 {
-  mapping (address => uint256) private _balances;
+  mapping (address => uint256) public balances;
   // можно разрешить только одному контракту, ай йай
   mapping (address => mapping (address => uint256)) private _allowed;
 
@@ -64,7 +64,7 @@ contract ZepToken is IERC20 {
     return _owner;
   }  
   function balanceOf(address person) public view override returns (uint256) {
-    return _balances[person];
+    return balances[person];
   }
 
   function allowance(address person,address spender) public view override returns (uint256)
@@ -73,11 +73,11 @@ contract ZepToken is IERC20 {
   }
 
   function transfer(address to, uint256 value) public override returns (bool) {
-    require(value <= _balances[msg.sender], "Balance less then value");
+    require(value <= balances[msg.sender], "Balance less then value");
     require(to != address(0),"'To' can't be zero");
 
-    _balances[msg.sender] -= value;
-    _balances[to] += value;
+    balances[msg.sender] -= value;
+    balances[to] += value;
     emit Transfer(msg.sender, to, value);
     return true;
   }
@@ -91,12 +91,12 @@ contract ZepToken is IERC20 {
   }
 
   function transferFrom(address from, address to, uint256 value) public override returns (bool){
-    require(value <= _balances[from],"Balance less then value");
+    require(value <= balances[from],"Balance less then value");
     require(value <= _allowed[from][msg.sender],"Unauthorised, please approve");
     require(to != address(0),"'To' can't be zero");
 
-    _balances[from] -= value;
-    _balances[to] += value;
+    balances[from] -= value;
+    balances[to] += value;
     _allowed[from][msg.sender] -= value;
     emit Transfer(from, to, value);
     return true;
@@ -121,16 +121,16 @@ contract ZepToken is IERC20 {
   function mint(address account, uint256 amount) public onlyBy(_owner){
     require(account != address(0),"Account can't be zero");
     _totalSupply += amount;
-    _balances[account] += amount;
+    balances[account] += amount;
     emit Transfer(address(0), account, amount);
   }
 
   function burn(address account, uint256 amount) public onlyBy(_owner) {
     require(account != address(0),"Account can't be zero");
-    require(amount <= _balances[account],"You don't have such amount");
+    require(amount <= balances[account],"You don't have such amount");
 
     _totalSupply -= amount;
-    _balances[account] -= amount;
+    balances[account] -= amount;
     emit Transfer(account, address(0), amount);
   }
 
