@@ -8,7 +8,9 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "./scripts/approve";
 import "./scripts/accounts";
-import "./scripts/balance";
+import "./scripts/balanceof";
+import "./scripts/transfer";
+import "./scripts/transferfrom";
 dotenv.config();
 
 // You need to export an object to set up your config
