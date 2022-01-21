@@ -2,9 +2,10 @@ import { isCommunityResourcable } from "@ethersproject/providers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { Contract, ContractFactory } from "ethers";
 // import { ZepToken__factory,ZepToken } from "typechain"
-
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import { ethers } from "hardhat";
+import { expect } from "chai";
+// const { expect } = require("chai");
+// const { ethers } = require("hardhat");
 
 describe('another try', () =>{
 
