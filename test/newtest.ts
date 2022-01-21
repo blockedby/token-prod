@@ -1,3 +1,4 @@
+import { isCommunityResourcable } from "@ethersproject/providers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { Contract, ContractFactory } from "ethers";
 import { ZepToken__factory,ZepToken } from "../typechain";
@@ -98,9 +99,6 @@ describe('another try', () =>{
                 token.connect(owner).transfer(zero_address,100)
             ).to.be.revertedWith("'To' can't be zero");
         });
-        it("Should be approved", async function (){
-            
-        });
         it("Approve should fail by sending to zero address", async function (){
             await expect(
                 token.connect(owner).approve(zero_address,100)
@@ -118,21 +116,26 @@ describe('another try', () =>{
             const _owner_balance = await token.connect(bob).balances(owner.address);
             const _alice_balance = await token.connect(owner).balances(alice.address);
             const _bob_balance = await token.connect(alice).balances(bob.address);
+
             expect(_owner_balance).to.equal(700);
             expect(_alice_balance).to.equal(100);
             expect(_bob_balance).to.equal(200);
 
-            await expect(await token.connect(alice).balanceOf(owner.address)).to.equal(_owner_balance);
-            await expect(await token.connect(bob).balanceOf(alice.address)).to.equal(_alice_balance);
-            await expect(await token.connect(owner).balanceOf(bob.address)).to.equal(_bob_balance);
-
-            // await expect(await ethers.BigNumber.from(temp)).to.equal(_owner_balance);
-            // await expect(
-            //     token.connect(alice).balanceOf(owner.address)).to.equal(_owner_balance);
+            expect(await token.connect(alice).balanceOf(owner.address)).to.equal(_owner_balance);
+            expect(await token.connect(bob).balanceOf(alice.address)).to.equal(_alice_balance);
+            expect(await token.connect(owner).balanceOf(bob.address)).to.equal(_bob_balance);
         });
-        it("Should be able to allow", async function (){
+        it("Should be able to approve", async function (){
             await token.connect(owner).approve(alice.address,100);
+            let _allowedStorage = await token.connect(owner).allowed(owner.address,alice.address);
+
+            expect(
+                await token.connect(owner).allowance(owner.address,alice.address)
+                ).to.equal(_allowedStorage);
         });
+        // it("Should be approved", async function (){
+            
+        // }); 
         it("Allowed amount should be increased", async function (){
             
         });
