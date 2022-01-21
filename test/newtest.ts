@@ -7,12 +7,8 @@ const { ethers } = require("hardhat");
 
 describe('another try', () =>{
     let 
-        Token: ContractFactory, 
-        token1: Contract, 
-        // token2: Contract, 
-        // bridge1: Contract, 
-        // bridge2: Contract, 
-        // Bridge: ContractFactory, 
+        tokenFactory: ContractFactory, 
+        token: Contract, 
         owner: SignerWithAddress, 
         alice: SignerWithAddress, 
         bob: SignerWithAddress;
@@ -20,72 +16,84 @@ describe('another try', () =>{
 
     before(async () => {
         [alice, owner, bob] = await ethers.getSigners();
-        Token = await ethers.getContractFactory("ZepToken");
+        tokenFactory = await ethers.getContractFactory("ZepToken");
     });
     beforeEach(async () => {
-        token1 = await Token.connect(owner).deploy(1000);
-        await token1.deployed();
+        token = await tokenFactory.connect(owner).deploy(1000);
+        await token.deployed();
     });
 
     describe('Deployment', () => {
         it('Should set right name', async () => {
-            expect(await token1.name()).to.equal("KCNCtoken");
+            expect(await token.name()).to.equal("KCNCtoken");
         });
 
         it('Should set right symbol', async () => {
-            expect(await token1.symbol()).to.equal("KCNC");
+            expect(await token.symbol()).to.equal("KCNC");
         });
         it('Should set right decimals', async () =>{
-            expect(await token1.decimals()).to.equal(18);
+            expect(await token.decimals()).to.equal(18);
         }) 
         it('Should set right owner for tokens', async () => {
-            expect(await token1.owner()).to.equal(owner.address);
+            expect(await token.owner()).to.equal(owner.address);
         });
         it('Should set right balance for owner address', async () => {
-            expect(await token1.balanceOf(owner.address)).to.equal(1000);
+            expect(await token.balanceOf(owner.address)).to.equal(1000);
         });
         it('Balance of Alice should be zero',async () =>{
-            expect(await token1.balanceOf(alice.address)).to.equal(0);
+            expect(await token.balanceOf(alice.address)).to.equal(0);
         })
         it('Should set right total supply', async () =>{
-            expect(await token1.totalSupply()).to.equal(1000);
+            expect(await token.totalSupply()).to.equal(1000);
         })
         it("Modifier should works with owner", async function (){
-            expect(await token1.owner()).to.equal(owner.address);
-            await token1.connect(owner).mint(alice.address,100);
-            await token1.connect(owner).burn(alice.address,10);
-            await token1.connect(alice).approve(owner.address,90);
-            await token1.connect(owner).burnFrom(alice.address,90);
+            expect(await token.owner()).to.equal(owner.address);
+            await token.connect(owner).mint(alice.address,100);
+            await token.connect(owner).burn(alice.address,10);
+            await token.connect(alice).approve(owner.address,90);
+            await token.connect(owner).burnFrom(alice.address,90);
         });
 
         it("Modifier shouldn't works with other", async function (){
             // really not Alice
-            await expect(token1.owner()).to.not.equal(alice.address);
-            await token1.connect(owner).transfer(alice.address,100);
+            await expect(token.owner()).to.not.equal(alice.address);
+            await token.connect(owner).transfer(alice.address,100);
+            await token.connect(owner).approve(alice.address,100);
 
             await expect(
-                token1.connect(alice).mint(alice.address, 1)
-            ).to.be.revertedWith("VM Exception while processing transaction: reverted with custom error 'Unauthorized()'");
+                token.connect(alice).mint(alice.address, 1)
+            ).to.be.revertedWith(
+                "VM Exception while processing transaction: reverted with custom error 'Unauthorized()'");
+
+            await expect(
+                token.connect(alice).burn(alice.address, 1)
+            ).to.be.revertedWith(
+                "VM Exception while processing transaction: reverted with custom error 'Unauthorized()'");
+            
+            await expect(
+                token.connect(alice).burnFrom(owner.address, 1)
+            ).to.be.revertedWith(
+                "VM Exception while processing transaction: reverted with custom error 'Unauthorized()'");    
         });
 
         it("Should be transfered by account and update balances", async function (){
-            await token1.connect(owner).transfer(alice.address,100);
-            expect(await token1.balanceOf(owner.address)).to.equal(900);
-            expect(await token1.balanceOf(alice.address)).to.equal(100);
+            await token.connect(owner).transfer(alice.address,100);
+            expect(await token.balanceOf(owner.address)).to.equal(900);
+            expect(await token.balanceOf(alice.address)).to.equal(100);
         });
         it("Transfer should fail due to lack of token amount", async () =>{
             await expect(
-                token1.connect(owner).transfer(alice.address, 1001)
+                token.connect(owner).transfer(alice.address, 1001)
             ).to.be.revertedWith("Balance less then value");
             await expect(
-                token1.connect(bob).transfer(alice.address, 1)
+                token.connect(bob).transfer(alice.address, 1)
                 // catch an error
             ).to.be.revertedWith("Balance less then value");
             
         })
         it("Transfer should fail by sending to zero address", async function (){
             await expect(
-                token1.connect(owner).transfer(zero_address,100)
+                token.connect(owner).transfer(zero_address,100)
             ).to.be.revertedWith("'To' can't be zero");
         });
         it("Should be approved", async function (){
@@ -93,19 +101,32 @@ describe('another try', () =>{
         });
         it("Approve should fail by sending to zero address", async function (){
             await expect(
-                token1.connect(owner).approve(zero_address,100)
+                token.connect(owner).approve(zero_address,100)
             ).to.be.revertedWith("'Spender' can't be zero");
         });
         it("Can be transferedFrom", async function (){
+            await token.connect(owner).approve(alice.address,100);
+            await token.connect(alice).transferFrom(owner.address,bob.address,100);
+            expect( await token.balanceOf(bob.address)).to.equal(100);
+        });
+        it('Should store balances', async function (){
+            await token.connect(owner).transfer(alice.address, 100);
+            await token.connect(owner).transfer(bob.address, 200);
+
+            const _owner_balance = await token.connect(bob).balances(owner.address);
+            const _alice_balance = await token.connect(owner).balances(alice.address);
+            const _bob_balance = await token.connect(alice).balances(bob.address);
+            expect(_owner_balance).to.equal(700);
+            expect(_alice_balance).to.equal(100);
+            expect(_bob_balance).to.equal(200);
+        });
+        it("Should be able to allow", async function (){
+            await token.connect(owner).approve(alice.address,100);
+        });
+        it("Allowed amount should be increased", async function (){
             
         });
-        it("Should be allow", async function (){
-            
-        });
-        it("Allowance should be increased", async function (){
-            
-        });
-        it("Allowance should be decreased", async function (){
+        it("Allowed amount should be decreased", async function (){
             
         });
         it("Should be minted", async function (){
