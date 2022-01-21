@@ -11,6 +11,7 @@ describe('another try', () =>{
 
     // ethers.utils.parseUnits("10.0", await token.decimals());
     let 
+        decimals: String,
         tokenFactory: ContractFactory, 
         token: Contract, 
         owner: SignerWithAddress, 
@@ -26,8 +27,9 @@ describe('another try', () =>{
         // token = await tokenFactory.deploy(1000,{
         //     gasPrice: 5000000000000,
         // });
-        token = await tokenFactory.connect(owner).deploy(1000); 
+        token = await tokenFactory.connect(owner).deploy(ethers.utils.parseEther("1000")); 
         await token.deployed();
+        decimals = await token.decimals();
     });
     describe('Deployment', () => {
         it('Should set right name', async () => {
