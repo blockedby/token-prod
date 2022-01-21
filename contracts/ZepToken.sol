@@ -18,7 +18,7 @@ interface IERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-contract ERC20 is IERC20 {
+contract ZepToken is IERC20 {
   mapping (address => uint256) private _balances;
   // можно разрешить только одному контракту, ай йай
   mapping (address => mapping (address => uint256)) private _allowed;
@@ -31,8 +31,9 @@ contract ERC20 is IERC20 {
 
   error Unauthorized();
 
-  constructor(){
+  constructor(uint256 _initialBalance){
     _owner = msg.sender;
+    mint(msg.sender,_initialBalance);
   }
 
   modifier onlyBy(address _account)
@@ -59,13 +60,16 @@ contract ERC20 is IERC20 {
     return _symbol;
   }
 
-  function balanceOf(address owner) public view override returns (uint256) {
-    return _balances[owner];
+  function owner() public view returns (address){
+    return _owner;
+  }  
+  function balanceOf(address person) public view override returns (uint256) {
+    return _balances[person];
   }
 
-  function allowance(address owner,address spender) public view override returns (uint256)
+  function allowance(address person,address spender) public view override returns (uint256)
   {
-    return _allowed[owner][spender];
+    return _allowed[person][spender];
   }
 
   function transfer(address to, uint256 value) public override returns (bool) {
@@ -88,7 +92,7 @@ contract ERC20 is IERC20 {
 
   function transferFrom(address from, address to, uint256 value) public override returns (bool){
     require(value <= _balances[from],"Balance less then value");
-    require(value <= _allowed[from][msg.sender],"Anauthorised, please approve");
+    require(value <= _allowed[from][msg.sender],"Unauthorised, please approve");
     require(to != address(0),"'To' can't be zero");
 
     _balances[from] -= value;
