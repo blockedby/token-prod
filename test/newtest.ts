@@ -16,14 +16,23 @@ describe('another try', () =>{
         alice: SignerWithAddress, 
         bob: SignerWithAddress;
     const zero_address = "0x0000000000000000000000000000000000000000";
-
     before(async () => {
         [alice, owner, bob] = await ethers.getSigners();
-        tokenFactory = await ethers.getContractFactory("ZepToken");
+        tokenFactory = await ethers.getContractFactory("ZepToken",owner);
     });
     beforeEach(async () => {
-        token = await tokenFactory.connect(owner).deploy(1000);
+        // was a problem, fixed here : https://github.com/sc-forks/solidity-coverage/issues/652 
+        // token = await tokenFactory.deploy(1000,{
+        //     gasPrice: 5000000000000,
+        // });
+        token = await tokenFactory.connect(owner).deploy(1000); 
         await token.deployed();
+    });
+
+    describe('Basic functions', () =>{
+        it('totalSupply()', async () =>{
+            expect(await token.totalSupply()).to.equal(1000);
+        });
     });
 
     describe('Deployment', () => {
@@ -54,7 +63,7 @@ describe('another try', () =>{
             await token.connect(owner).mint(alice.address,100);
             await token.connect(owner).burn(alice.address,10);
             await token.connect(alice).approve(owner.address,90);
-            await token.connect(owner).burnFrom(alice.address,90);
+            // await token.connect(owner).burnFrom(alice.address,90);
         });
 
         it("Modifier shouldn't works with other", async function (){
@@ -66,17 +75,17 @@ describe('another try', () =>{
             await expect(
                 token.connect(alice).mint(alice.address, 1)
             ).to.be.revertedWith(
-                "VM Exception while processing transaction: reverted with custom error 'Unauthorized()'");
+                "VM Exception while processing transaction: reverted with reason string 'Unauthorized'");
 
             await expect(
                 token.connect(alice).burn(alice.address, 1)
             ).to.be.revertedWith(
-                "VM Exception while processing transaction: reverted with custom error 'Unauthorized()'");
+                "VM Exception while processing transaction: reverted with reason string 'Unauthorized'");
             
-            await expect(
-                token.connect(alice).burnFrom(owner.address, 1)
-            ).to.be.revertedWith(
-                "VM Exception while processing transaction: reverted with custom error 'Unauthorized()'");    
+            // await expect(
+            //     token.connect(alice).burnFrom(owner.address, 1)
+            // ).to.be.revertedWith(
+            //     "VM Exception while processing transaction: reverted with custom error 'Unauthorized()'");    
         });
 
         it("Should be transfered by account and update balances", async function (){
@@ -173,10 +182,45 @@ describe('another try', () =>{
             expect(_initialBalance+100).to.equal(_changedBalance);
         });
         it("Should be burned", async function (){
+            await token.connect(owner).transfer(alice.address,100);
+
+            let _initialSupply = await token.connect(owner).totalSupply();
+            let _initialBalance = await token.connect(alice).balanceOf(alice.address);
+
+            _initialSupply = _initialSupply.toNumber();
+            _initialBalance = _initialBalance.toNumber();
+
+            await token.connect(owner).burn(alice.address,100);
+
+            let _changedSupply = await token.connect(bob).totalSupply();
+            let _changedBalance = await token.connect(owner).balanceOf(alice.address);
+
+            _changedSupply = _changedSupply.toNumber();
+            _changedBalance = _changedBalance.toNumber();
+
+            expect(_initialSupply-100).to.equal(_changedSupply);
+            expect(_initialBalance-100).to.equal(_changedBalance);
             
         });
-        it("Should be burned from", async function (){
-            
-        });
+        // it("Should be burned from", async function (){
+        //     await token.connect(owner).transfer(alice.address,100);
+
+        //     let _initialSupply = await token.connect(owner).totalSupply();
+        //     let _initialBalance = await token.connect(alice).balanceOf(alice.address);
+
+        //     _initialSupply = _initialSupply.toNumber();
+        //     _initialBalance = _initialBalance.toNumber();
+
+        //     await token.connect(owner).burn(alice.address,100);
+
+        //     let _changedSupply = await token.connect(bob).totalSupply();
+        //     let _changedBalance = await token.connect(owner).balanceOf(alice.address);
+
+        //     _changedSupply = _changedSupply.toNumber();
+        //     _changedBalance = _changedBalance.toNumber();
+
+        //     expect(_initialSupply-100).to.equal(_changedSupply);
+        //     expect(_initialBalance-100).to.equal(_changedBalance);
+        // });
     });
 })

@@ -25,6 +25,12 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 const config: HardhatUserConfig = {
   solidity: "0.8.4",
   networks: {
+    hardhat:{
+      // gasPrice: 8000000000000,
+      // hardfork: process.env.CODE_COVERAGE ? "berlin" : "london",
+      // minGasPrice:5298796000,
+      initialBaseFeePerGas: 0,
+    },
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
       accounts:

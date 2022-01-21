@@ -28,20 +28,16 @@ contract ZepToken is IERC20 {
   uint private _decimals = 18;
   uint256 private _totalSupply;
   address private _owner;
-
-  error Unauthorized();
+// cutted due to solidity-coverage error: 
+// Error in plugin solidity-coverage: Error: Could not instrument: ZepToken.sol. (Please verify solc can compile this file without errors.) mismatched input '(' expecting {';', '='} (32:20)
+  // error Unauthorized();
 
   constructor(uint256 _initialBalance){
     _owner = msg.sender;
     mint(msg.sender,_initialBalance);
   }
 
-  modifier onlyBy(address _account)
-  {
-    if (msg.sender != _account)
-      revert Unauthorized();
-    _;
-  }
+
   
 
   function totalSupply() public view override returns (uint256) {
@@ -134,10 +130,16 @@ contract ZepToken is IERC20 {
     emit Transfer(account, address(0), amount);
   }
 
-  function burnFrom(address account, uint256 amount) public onlyBy(_owner) {
-    require(amount <= allowed[account][msg.sender],"Error with approved amount");
-
-    allowed[account][msg.sender] -= amount;
-    burn(account, amount);
+  modifier onlyBy(address _account) {
+    require(msg.sender == _account, "Unauthorized");
+      // revert Unauthorized();
+    _;
   }
+  // by allowed???
+  // function burnFrom(address account, uint256 amount) public onlyBy(_owner) {
+  //   require(amount <= allowed[account][msg.sender],"Error with approved amount");
+
+  //   allowed[account][msg.sender] -= amount;
+  //   burn(account, amount);
+  // }
 }
