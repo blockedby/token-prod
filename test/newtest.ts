@@ -4,8 +4,6 @@ import { Contract, ContractFactory } from "ethers";
 // import { ZepToken__factory,ZepToken } from "typechain"
 import { ethers } from "hardhat";
 import { expect } from "chai";
-// const { expect } = require("chai");
-// const { ethers } = require("hardhat");
 
 describe('another try', () =>{
 
@@ -29,7 +27,7 @@ describe('another try', () =>{
         // });
         token = await tokenFactory.connect(owner).deploy(ethers.utils.parseEther("1000")); 
         await token.deployed();
-        decimals = await token.decimals();
+        decimals = await token.decimals().toString();
     });
     describe('Deployment', () => {
         it('Should set right name', async () => {
