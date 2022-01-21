@@ -117,6 +117,21 @@ describe('another try', () =>{
             await token.connect(owner).approve(alice.address,100);
             await token.connect(alice).transferFrom(owner.address,bob.address,100);
             expect( await token.balanceOf(bob.address)).to.equal(100);
+
+        });
+        it("Cannot be transferedFrom",async function (){
+            await token.connect(owner).approve(alice.address,100);
+            // await token.connect(alice).transferFrom(owner.address,bob.address,100);
+
+            await expect(
+                token.connect(alice).transferFrom(owner.address,bob.address,1001)
+            ).to.be.revertedWith("Balance less then value");
+            await expect(
+                token.connect(alice).transferFrom(owner.address,owner.address,101)
+            ).to.be.revertedWith('Unauthorised, please approve');
+            await expect(
+                token.connect(alice).transferFrom(owner.address,zero_address,10)
+            ).to.be.revertedWith("'To' can't be zero");
         });
         it('Should store balances', async function (){
             await token.connect(owner).transfer(alice.address, 100);
@@ -153,6 +168,9 @@ describe('another try', () =>{
             await expect(
                 _currentApproved.toNumber()
                 ).to.equal(150);
+            await expect(
+                token.connect(owner).increaseAllowance(zero_address,50)
+                ).to.be.revertedWith("'Spender' can't be zero");
         });
         it("Allowed amount should be decreased", async function (){
             await token.connect(owner).approve(alice.address,100);
@@ -161,7 +179,10 @@ describe('another try', () =>{
             // console.log(_currentApproved.toNumber());
             await expect(
                 _currentApproved.toNumber()
-                ).to.equal(50);            
+                ).to.equal(50);
+            await expect(
+                token.connect(owner).decreaseAllowance(zero_address,50)
+                ).to.be.revertedWith("'Spender' can't be zero");            
         });
         it("Should be minted", async function (){
             let _initialSupply = await token.connect(bob).totalSupply();
