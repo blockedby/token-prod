@@ -6,11 +6,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
-import "./scripts/approve";
-import "./scripts/accounts";
-import "./scripts/balanceof";
-import "./scripts/transfer";
-import "./scripts/transferfrom";
+import "./tasks/index";
 dotenv.config();
 
 // You need to export an object to set up your config
