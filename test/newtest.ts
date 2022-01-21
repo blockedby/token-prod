@@ -137,13 +137,40 @@ describe('another try', () =>{
             
         // }); 
         it("Allowed amount should be increased", async function (){
-            
+            await token.connect(owner).approve(alice.address,100);
+            await token.connect(owner).increaseAllowance(alice.address,50);
+            let _currentApproved = await token.connect(alice).allowance(owner.address,alice.address);
+            // console.log(_currentApproved.toNumber());
+            await expect(
+                _currentApproved.toNumber()
+                ).to.equal(150);
         });
         it("Allowed amount should be decreased", async function (){
-            
+            await token.connect(owner).approve(alice.address,100);
+            await token.connect(owner).decreaseAllowance(alice.address,50);
+            let _currentApproved = await token.connect(alice).allowance(owner.address,alice.address);
+            // console.log(_currentApproved.toNumber());
+            await expect(
+                _currentApproved.toNumber()
+                ).to.equal(50);            
         });
         it("Should be minted", async function (){
-            
+            let _initialSupply = await token.connect(bob).totalSupply();
+            let _initialBalance = await token.connect(owner).balanceOf(alice.address);
+
+            _initialSupply = _initialSupply.toNumber();
+            _initialBalance = _initialBalance.toNumber();
+
+            await token.connect(owner).mint(alice.address,100);
+
+            let _changedSupply = await token.connect(bob).totalSupply();
+            let _changedBalance = await token.connect(owner).balanceOf(alice.address);
+
+            _changedSupply = _changedSupply.toNumber();
+            _changedBalance = _changedBalance.toNumber();
+
+            expect(_initialSupply+100).to.equal(_changedSupply);
+            expect(_initialBalance+100).to.equal(_changedBalance);
         });
         it("Should be burned", async function (){
             
