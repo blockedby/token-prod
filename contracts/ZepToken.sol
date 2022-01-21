@@ -123,7 +123,7 @@ contract ZepToken is IERC20 {
 
   function burn(address account, uint256 amount) public onlyBy(_owner) {
     require(account != address(0),"Account can't be zero");
-    require(amount <= balances[account],"You don't have such amount");
+    require(amount <= balances[account],"Account doesn't own such amount");
 
     _totalSupply -= amount;
     balances[account] -= amount;
@@ -135,11 +135,4 @@ contract ZepToken is IERC20 {
       // revert Unauthorized();
     _;
   }
-  // by allowed???
-  // function burnFrom(address account, uint256 amount) public onlyBy(_owner) {
-  //   require(amount <= allowed[account][msg.sender],"Error with approved amount");
-
-  //   allowed[account][msg.sender] -= amount;
-  //   burn(account, amount);
-  // }
 }

@@ -28,13 +28,6 @@ describe('another try', () =>{
         token = await tokenFactory.connect(owner).deploy(1000); 
         await token.deployed();
     });
-
-    describe('Basic functions', () =>{
-        it('totalSupply()', async () =>{
-            expect(await token.totalSupply()).to.equal(1000);
-        });
-    });
-
     describe('Deployment', () => {
         it('Should set right name', async () => {
             expect(await token.name()).to.equal("KCNCtoken");
@@ -201,6 +194,10 @@ describe('another try', () =>{
 
             expect(_initialSupply+100).to.equal(_changedSupply);
             expect(_initialBalance+100).to.equal(_changedBalance);
+
+            await expect(
+                token.connect(owner).mint(zero_address,50)
+                ).to.be.revertedWith("Account can't be zero");    
         });
         it("Should be burned", async function (){
             await token.connect(owner).transfer(alice.address,100);
@@ -221,27 +218,14 @@ describe('another try', () =>{
 
             expect(_initialSupply-100).to.equal(_changedSupply);
             expect(_initialBalance-100).to.equal(_changedBalance);
+
+            await expect(
+                token.connect(owner).burn(zero_address,50)
+                ).to.be.revertedWith("Account can't be zero");
+            await expect(
+                token.connect(owner).burn(owner.address,1001)
+            ).to.be.revertedWith("Account doesn't own such amount");   
             
         });
-        // it("Should be burned from", async function (){
-        //     await token.connect(owner).transfer(alice.address,100);
-
-        //     let _initialSupply = await token.connect(owner).totalSupply();
-        //     let _initialBalance = await token.connect(alice).balanceOf(alice.address);
-
-        //     _initialSupply = _initialSupply.toNumber();
-        //     _initialBalance = _initialBalance.toNumber();
-
-        //     await token.connect(owner).burn(alice.address,100);
-
-        //     let _changedSupply = await token.connect(bob).totalSupply();
-        //     let _changedBalance = await token.connect(owner).balanceOf(alice.address);
-
-        //     _changedSupply = _changedSupply.toNumber();
-        //     _changedBalance = _changedBalance.toNumber();
-
-        //     expect(_initialSupply-100).to.equal(_changedSupply);
-        //     expect(_initialBalance-100).to.equal(_changedBalance);
-        // });
     });
 })
