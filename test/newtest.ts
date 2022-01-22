@@ -1,4 +1,3 @@
-import { isCommunityResourcable } from "@ethersproject/providers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { Contract, ContractFactory } from "ethers";
 // import { ZepToken__factory,ZepToken } from "typechain"
@@ -29,7 +28,7 @@ describe('another try', () => {
         await token.deployed();
         decimals = await token.decimals().toString();
     });
-    describe('Deployment', () => {
+    describe('FULL', () => {
         it('Should set right name', async () => {
             expect(await token.name()).to.equal("KCNCtoken");
         });
@@ -226,7 +225,6 @@ describe('another try', () => {
             await expect(
                 token.connect(owner).burn(owner.address, ethers.utils.parseEther("1001"))
             ).to.be.revertedWith("Account doesn't own such amount");
-
         });
     });
 })
