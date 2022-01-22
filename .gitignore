@@ -1,0 +1,23 @@
+node_modules
+
+node_modules
+.env
+coverage
+coverage.json
+typechain
+
+#Hardhat files
+cache
+artifacts
+
+
+.env.example
+.eslintignore
+.eslintrc.js
+.npmignore
+.prettierignore
+.solhint.json
+hardhat.config.json
+tsconfig.json
+_contracts
+archiveoftest
