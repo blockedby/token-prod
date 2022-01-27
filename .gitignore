@@ -9,6 +9,8 @@ typechain
 #Hardhat files
 cache
 artifacts
+# 
+testfile
 
 
 .env.example
