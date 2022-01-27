@@ -18,6 +18,7 @@ artifacts
 .prettierignore
 .solhint.json
 hardhat.config.json
+hardhat.config.ts
 tsconfig.json
 _contracts
 archiveoftest
